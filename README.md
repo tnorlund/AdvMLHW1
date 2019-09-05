@@ -130,9 +130,9 @@ Looking at the graphs,
 
 **ANSWER**
 
-```math
-$x + 5=y$
-```
+
+$$x + 5=y$$
+
 
 ```python
 model1 = models.Sequential()
