@@ -3,15 +3,6 @@
 
 
 ```python
-import pandas as pd
-
-import sklearn
-import sklearn.datasets
-import sklearn.preprocessing
-from sklearn.model_selection import KFold
-
-import seaborn as sns
-
 import keras
 from keras import models
 from keras import layers
@@ -21,6 +12,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 %matplotlib inline
 ```
+
+    Using TensorFlow backend.
+
 
 ## Problem 1 (20 points)
 
@@ -83,16 +77,16 @@ model2.compile(
     metrics=["accuracy"]
 )
 hist1 = model1.fit(
-    partial_x_train,
-    partial_y_train,
+    x_train,
+    y_train,
     epochs=20,
     batch_size=512,
     validation_data=(x_val, y_val),
     verbose=0
 )
 hist2 = model2.fit(
-    partial_x_train,
-    partial_y_train,
+    x_train,
+    y_train,
     epochs=20,
     batch_size=512,
     validation_data=(x_val, y_val),
@@ -105,7 +99,6 @@ With the models trained, we can now view the training and validation loss for ou
 
 ```python
 def compare_plots(hist1, hist2, title1, title2):
-    epochs = range(1, len(hist1.history["loss"]) + 1)
     fig = plt.figure(figsize=(15,5))
     ax_left = fig.add_subplot(121)
     ax_right = fig.add_subplot(122)
@@ -131,11 +124,14 @@ compare_plots(hist1, hist2, title1="1 Dense Hidden Layer", title2="3 Dense Hidde
 ![png](output_9_0.png)
 
 
-Here, we see that there is not much of a difference between the single hidden dense layer and the 3 hidden dense layers.
+Looking at the graphs, 
 
 2. We used 16 hidden neurons in our example. Try using 2 layers with more hidden units (32 and 64 units). Report how doing so affects validation and test accuracy.
 
 **ANSWER**
+
+
+<p align="center"><img src="https://rawgit.com/in	git@github.com:tnorlund/AdvMLHW1/master/svgs/e07d5607fc5d7a97381ecbace3d3bc2b.svg?invert_in_darkmode" align=middle width=68.2722447pt height=13.789957499999998pt/></p>
 
 
 ```python
@@ -159,16 +155,16 @@ model2.compile(
 )
 compare_plots(
     model1.fit(
-        partial_x_train,
-        partial_y_train,
+        x_train,
+        y_train,
         epochs=20,
         batch_size=512,
         validation_data=(x_val, y_val),
         verbose=0
     ), 
     model2.fit(
-        partial_x_train,
-        partial_y_train,
+        x_train,
+        y_train,
         epochs=20,
         batch_size=512,
         validation_data=(x_val, y_val),
@@ -211,16 +207,16 @@ model2.compile(
 )
 compare_plots(
     model1.fit(
-        partial_x_train,
-        partial_y_train,
+        x_train,
+        y_train,
         epochs=20,
         batch_size=512,
         validation_data=(x_val, y_val),
         verbose=0
     ), 
     model2.fit(
-        partial_x_train,
-        partial_y_train,
+        x_train,
+        y_train,
         epochs=20,
         batch_size=512,
         validation_data=(x_val, y_val),
@@ -264,16 +260,16 @@ model2.compile(
 )
 compare_plots(
     model1.fit(
-        partial_x_train,
-        partial_y_train,
+        x_train,
+        y_train,
         epochs=20,
         batch_size=512,
         validation_data=(x_val, y_val),
         verbose=0
     ), 
     model2.fit(
-        partial_x_train,
-        partial_y_train,
+        x_train,
+        y_train,
         epochs=20,
         batch_size=512,
         validation_data=(x_val, y_val),
@@ -288,186 +284,48 @@ compare_plots(
 ![png](output_18_0.png)
 
 
-Here, we see that there is not much of a difference between the relu and tanh activation layers.
+
 
 ## Problem 2 (35 points)
 
-In this problem you work with the Boston housing dataset (available in R and Python) and predict the median price of homes in a given Boston suburb in the mid-1970's, given data points about the suburb at the time, such as the crime rate, the local property tax rate, etc..
-1. Load and pre-process the data using Gaussian normalization.
+In this problem you work with the boston housing dataset (available in R and Python) and predict the median price of homes in a given Boston suburb in the mid-1970s, given data points about the suburb at the time, such as the crime rate, the local property tax rate, etc..
+1. Load and preprocess the data using Gaussian normalization.
 
 **ANSWER**
 
-With sklearn module, we can load the dataset and normalize it using the same module.
+
+```python
+from sklearn.datasets import load_boston
+boston = load_boston()
+print(boston["DESCR"])
+Y = boston["data"][:,-1]
+X = boston["data"][:,0:-1]
+```
 
 
 ```python
-boston_df = pd.DataFrame(
-    data=sklearn.preprocessing.normalize(sklearn.datasets.load_boston().data, norm="l2"),
-    index=sklearn.datasets.load_boston().target,
-    columns=sklearn.datasets.load_boston().feature_names
-).sort_index()
-print(sklearn.datasets.load_boston().DESCR)
+Y
 ```
-
-    .. _boston_dataset:
-    
-    Boston house prices dataset
-    ---------------------------
-    
-    **Data Set Characteristics:**  
-    
-        :Number of Instances: 506 
-    
-        :Number of Attributes: 13 numeric/categorical predictive. Median Value (attribute 14) is usually the target.
-    
-        :Attribute Information (in order):
-            - CRIM     per capita crime rate by town
-            - ZN       proportion of residential land zoned for lots over 25,000 sq.ft.
-            - INDUS    proportion of non-retail business acres per town
-            - CHAS     Charles River dummy variable (= 1 if tract bounds river; 0 otherwise)
-            - NOX      nitric oxides concentration (parts per 10 million)
-            - RM       average number of rooms per dwelling
-            - AGE      proportion of owner-occupied units built prior to 1940
-            - DIS      weighted distances to five Boston employment centres
-            - RAD      index of accessibility to radial highways
-            - TAX      full-value property-tax rate per $10,000
-            - PTRATIO  pupil-teacher ratio by town
-            - B        1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town
-            - LSTAT    % lower status of the population
-            - MEDV     Median value of owner-occupied homes in $1000's
-    
-        :Missing Attribute Values: None
-    
-        :Creator: Harrison, D. and Rubinfeld, D.L.
-    
-    This is a copy of UCI ML housing dataset.
-    https://archive.ics.uci.edu/ml/machine-learning-databases/housing/
-    
-    
-    This dataset was taken from the StatLib library which is maintained at Carnegie Mellon University.
-    
-    The Boston house-price data of Harrison, D. and Rubinfeld, D.L. 'Hedonic
-    prices and the demand for clean air', J. Environ. Economics & Management,
-    vol.5, 81-102, 1978.   Used in Belsley, Kuh & Welsch, 'Regression diagnostics
-    ...', Wiley, 1980.   N.B. Various transformations are used in the table on
-    pages 244-261 of the latter.
-    
-    The Boston house-price data has been used in many machine learning papers that address regression
-    problems.   
-         
-    .. topic:: References
-    
-       - Belsley, Kuh & Welsch, 'Regression diagnostics: Identifying Influential Data and Sources of Collinearity', Wiley, 1980. 244-261.
-       - Quinlan,R. (1993). Combining Instance-Based and Model-Based Learning. In Proceedings on the Tenth International Conference of Machine Learning, 236-243, University of Massachusetts, Amherst. Morgan Kaufmann.
-    
-
 
 2. Create a deep NN with two 64-unit dense layers. What are your metric and loss function when compiling the model?
 
 **ANSWER**
 
-The metric we will use to gauge this model will be its accuracy. The loss function we will be using will be Binary Crossentropy.
-
 
 ```python
-def create_model():
-    model = models.Sequential()
-    model.add(layers.Dense(64, activation="relu", input_shape=(boston_df.shape[1],)))
-    model.add(layers.Dense(64, activation="relu"))
-    model.add(layers.Dense(1, activation="softmax"))
-    model.compile(
-        optimizer=optimizers.RMSprop(lr=0.1),
-        loss="binary_crossentropy",
-        metrics=["accuracy", 'mae']
-    )
-    return model
+
 ```
 
 3. Since the data set is small, you will use k-fold cross-validation instead of the hold-out. Use 4-fold cross-validation to fit the model for epochs = 500 and batch size = 1. Report the MAE on the 4 validation sets. Is there a lot of variation in MAE from one fold to another?
 
 **ANSWER**
-https://datascience.stackexchange.com/questions/11747/cross-validation-in-keras
 
 
 ```python
-def train_and_evaluate__model(
-    model, 
-    data_train, 
-    labels_train, 
-    data_validation, 
-    labels_validation
-):
-    return model.fit(
-        data_train,
-        labels_train,
-        epochs=500,
-        batch_size=1,
-        validation_data=(data_validation, labels_validation),
-        verbose=0
-    )
 
-n_folds = 4
-kf = KFold(n_splits=n_folds, shuffle=True)
-kf.get_n_splits(boston_df.values, boston_df.index.values)
-histories = []
-for train_index, test_index in kf.split(boston_df.values):
-    model = None
-    model = create_model()
-    histories.append(
-        train_and_evaluate__model(
-            model, 
-            boston_df.iloc[train_index].values,
-            boston_df.iloc[train_index].index.values,
-            boston_df.iloc[test_index].values,
-            boston_df.iloc[test_index].index.values
-        )
-    )
 ```
 
-    KFold(n_splits=4, random_state=None, shuffle=True)
-    training new model
-    
-    Training model
-    training new model
-    
-    Training model
-    training new model
-    
-    Training model
-    training new model
-    
-    Training model
-
-
-
-```python
-epochs = range(1, len(histories[0].history["mean_absolute_error"]) + 1)
-fig = plt.figure(figsize=(15,5))
-ax_left = fig.add_subplot(121)
-ax_right = fig.add_subplot(122)
-
-ax_left.plot(epochs, histories[2].history["val_mean_absolute_error"], "bo", label="Training loss")
-# ax_left.plot(epochs, hist1.history["val_loss"], "b", label="Validation loss")
-ax_left.title.set_text("Model 1")
-ax_left.set_xlabel("Epochs")
-ax_left.set_ylabel("Mean Absolute Error")
-ax_left.legend()
-
-ax_right.plot(epochs, histories[3].history["val_mean_absolute_error"], "bo", label="Training loss")
-# ax_right.plot(epochs, hist2.history["val_loss"], "b", label="Validation loss")
-ax_right.title.set_text("Model 2")
-ax_right.set_xlabel("Epochs")
-ax_right.set_ylabel("Mean Absolute Error")
-ax_right.legend()
-plt.show()
-# histories[1].history[]
-```
-
-
-![png](output_26_0.png)
-
-
-4. Plot the average of the per-epoch MAE scores for all folds vs the epoch number (*Hint*: use history). Based on this plot around which epoch should the training have stopped?
+4. Plot the average of the per-epoch MAE scores for all folds vs the epoch number (Hint: use history). Based on this plot around which epoch should the training had stopped?
 
 **ANSWER**
 
@@ -476,11 +334,6 @@ plt.show()
 
 ```
 
-5. Train a final production model on all of the training data, with the appropriate number of epochs (from above), and report its performance on the test data.
+5. Train a final production model on all of the training data, with the ap- propriate number of epochs (from above), and report its performance on the test data.
 
 **ANSWER**
-
-
-```python
-
-```
